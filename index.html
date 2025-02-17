@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مبدل واحدها</title>
+    <style>
+        @font-face {
+            font-family: 'Vazir';
+            src: url('https://cdn.rawgit.com/rastikerdar/vazir-font/v26.0.2/dist/font-face.css');
+        }
+        body {
+            font-family: 'Vazir', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #f3ec78, #af4261);
+            margin: 0;
+            direction: rtl;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            font-size: 16px;
+            margin-top: 10px;
+            display: block;
+            text-align: right;
+        }
+        input, select, button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>مبدل واحدها</h1>
+        <label for="inputValue">مقدار را وارد کنید</label>
+        <input type="number" id="inputValue" placeholder="مقدار را وارد کنید">
+        
+        <label for="category">دسته‌بندی</label>
+        <select id="category" onchange="populateUnits()">
+            <option value="length">طول</option>
+            <option value="weight">وزن</option>
+            <option value="temperature">دما</option>
+        </select>
+        
+        <label for="unitFrom">واحد مبدا</label>
+        <select id="unitFrom"></select>
+        
+        <label for="unitTo">واحد مقصد</label>
+        <select id="unitTo"></select>
+        
+        <button onclick="convert()">تبدیل</button>
+        <h2 id="result"></h2>
+    </div>
+    <script>
+        const units = {
+            length: {
+                meters: 'متر',
+                kilometers: 'کیلومتر',
+                centimeters: 'سانتیمتر',
+                millimeters: 'میلیمتر'
+            },
+            weight: {
+                grams: 'گرم',
+                kilograms: 'کیلوگرم',
+                milligrams: 'میلی‌گرم',
+                pounds: 'پوند'
+            },
+            temperature: {
+                celsius: 'سانتیگراد',
+                fahrenheit: 'فارنهایت',
+                kelvin: 'کلوین'
+            }
+        };
+
+        function populateUnits() {
+            const category = document.getElementById('category').value;
+            const unitFrom = document.getElementById('unitFrom');
+            const unitTo = document.getElementById('unitTo');
+            
+            unitFrom.innerHTML = '';
+            unitTo.innerHTML = '';
+            
+            for (const unit in units[category]) {
+                const option1 = document.createElement('option');
+                option1.value = unit;
+                option1.textContent = units[category][unit];
+                unitFrom.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = unit;
+                option2.textContent = units[category][unit];
+                unitTo.appendChild(option2);
+            }
+        }
+        
+        async function convert() {
+            const value = parseFloat(document.getElementById('inputValue').value);
+            const unitFrom = document.getElementById('unitFrom').value;
+            const unitTo = document.getElementById('unitTo').value;
+            
+            const response = await fetch('/convert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value, unitFrom, unitTo })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById('result').innerHTML = `نتیجه: ${data.result} ${units[document.getElementById('category').value][unitTo]}`;
+                document.getElementById('result').classList.add('fade-in');
+            } else {
+                document.getElementById('result').innerHTML = `خطا: ${data.error}`;
+                document.getElementById('result').classList.add('fade-in');
+            }
+        }
+
+        populateUnits();
+    </script>
+</body>
+</html>
