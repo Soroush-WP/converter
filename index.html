@@ -138,6 +138,11 @@
             const unitFrom = document.getElementById('unitFrom').value;
             const unitTo = document.getElementById('unitTo').value;
 
+            if (isNaN(value)) {
+                document.getElementById('result').innerHTML = 'لطفاً یک مقدار معتبر وارد کنید.';
+                return;
+            }
+
             const conversions = {
                 length: {
                     meters: { meters: 1, kilometers: 0.001, centimeters: 100, millimeters: 1000 },
@@ -172,7 +177,8 @@
             document.getElementById('result').classList.add('fade-in');
         }
 
-        populateUnits();
+        // Populate the units initially
+        document.addEventListener('DOMContentLoaded', populateUnits);
     </script>
 </body>
 </html>
