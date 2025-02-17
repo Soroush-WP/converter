@@ -133,25 +133,43 @@
             }
         }
         
-        async function convert() {
+        function convert() {
             const value = parseFloat(document.getElementById('inputValue').value);
             const unitFrom = document.getElementById('unitFrom').value;
             const unitTo = document.getElementById('unitTo').value;
+
+            const conversions = {
+                length: {
+                    meters: { meters: 1, kilometers: 0.001, centimeters: 100, millimeters: 1000 },
+                    kilometers: { meters: 1000, kilometers: 1, centimeters: 100000, millimeters: 1000000 },
+                    centimeters: { meters: 0.01, kilometers: 0.00001, centimeters: 1, millimeters: 10 },
+                    millimeters: { meters: 0.001, kilometers: 0.000001, centimeters: 0.1, millimeters: 1 }
+                },
+                weight: {
+                    grams: { grams: 1, kilograms: 0.001, milligrams: 1000, pounds: 0.00220462 },
+                    kilograms: { grams: 1000, kilograms: 1, milligrams: 1000000, pounds: 2.20462 },
+                    milligrams: { grams: 0.001, kilograms: 0.000001, milligrams: 1, pounds: 0.00000220462 },
+                    pounds: { grams: 453.592, kilograms: 0.453592, milligrams: 453592, pounds: 1 }
+                },
+                temperature: {
+                    celsius: { celsius: 1, fahrenheit: c => (c * 9/5) + 32, kelvin: c => c + 273.15 },
+                    fahrenheit: { celsius: f => (f - 32) * 5/9, fahrenheit: 1, kelvin: f => ((f - 32) * 5/9) + 273.15 },
+                    kelvin: { celsius: k => k - 273.15, fahrenheit: k => ((k - 273.15) * 9/5) + 32, kelvin: 1 }
+                }
+            };
             
-            const response = await fetch('/convert', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ value, unitFrom, unitTo })
-            });
+            const category = document.getElementById('category').value;
+            const conversion = conversions[category][unitFrom][unitTo];
             
-            const data = await response.json();
-            if (response.ok) {
-                document.getElementById('result').innerHTML = `نتیجه: ${data.result} ${units[document.getElementById('category').value][unitTo]}`;
-                document.getElementById('result').classList.add('fade-in');
+            let result;
+            if (typeof conversion === 'function') {
+                result = conversion(value);
             } else {
-                document.getElementById('result').innerHTML = `خطا: ${data.error}`;
-                document.getElementById('result').classList.add('fade-in');
+                result = value * conversion;
             }
+            
+            document.getElementById('result').innerHTML = `نتیجه: ${result} ${units[category][unitTo]}`;
+            document.getElementById('result').classList.add('fade-in');
         }
 
         populateUnits();
